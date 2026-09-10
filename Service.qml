@@ -34,7 +34,10 @@ Item {
   property string actionStatus: ""
 
   readonly property string ctlPath: String(setting("ctlPath", "") || "librepods-ctl")
-  readonly property bool busy: commandProcess.running
+  property string connectionRequest: ""
+  readonly property int connectionTimeoutMs: 15000
+  readonly property bool connectionBusy: connectionRequest !== ""
+  readonly property bool busy: commandProcess.running || connectionProcess.running || connectionBusy
   // The daemon publishes here on change, so there is nothing to poll.
   readonly property string statePath: (Quickshell.env("XDG_STATE_HOME")
     || Quickshell.env("HOME") + "/.local/state") + "/librepods/status.json"
@@ -87,6 +90,7 @@ Item {
 
   // The daemon removes the file when it stops, so an absent file is a stopped daemon.
   function stateGone() {
+    if (connectionRequest !== "") connectionFailed("The AirPods service stopped during the connection request")
     daemonReachable = false
     connected = false
     schemaUnsupported = false
@@ -95,6 +99,11 @@ Item {
 
   function applyStatus(status) {
     connected = status.connected
+    if ((connectionRequest === "connect" && connected)
+        || (connectionRequest === "disconnect" && !connected)) {
+      connectionRequest = ""
+      connectionTimer.stop()
+    }
     deviceName = status.deviceName
     modelName = status.modelName
     isProSeries = status.isProSeries
@@ -133,6 +142,7 @@ Item {
   }
 
   function _send(verb, field, optimistic) {
+    if (connectionBusy) return
     if (verb === "") return
     if (commandProcess.running) {
       _queued = { verb: verb, field: field, optimistic: optimistic }
@@ -188,6 +198,39 @@ Item {
 
   function cycleEarDetection() {
     setEarDetectionBehavior((earDetectionBehavior + 1) % Model.EAR_BEHAVIOR_COUNT)
+  }
+
+  function toggleConnection() {
+    if (busy || !daemonReachable || schemaUnsupported) return
+    actionStatus = ""
+    actionStatusTimer.stop()
+    connectionRequest = connected ? "disconnect" : "connect"
+    connectionProcess.command = [ctlPath, connectionRequest]
+    connectionTimer.restart()
+    connectionProcess.running = true
+  }
+
+  function connectionFailed(message) {
+    connectionRequest = ""
+    connectionTimer.stop()
+    actionStatus = Model.elideError(message)
+    actionStatusTimer.restart()
+  }
+
+  Timer {
+    id: connectionTimer
+    interval: root.connectionTimeoutMs
+    onTriggered: root.connectionFailed("AirPods did not confirm the request. Check Bluetooth and try again.")
+  }
+
+  Process {
+    id: connectionProcess
+    stderr: StdioCollector { id: connectionErr; waitForEnd: true }
+    onExited: function (exitCode) {
+      if (exitCode !== 0) root.connectionFailed(connectionErr.text || "Could not send the AirPods connection request")
+      // A successful command only acknowledges the request; the state file confirms the connection.
+      root.refresh()
+    }
   }
 
   Timer {

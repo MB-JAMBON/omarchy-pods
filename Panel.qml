@@ -16,7 +16,7 @@ Panel {
   property int cursorIndex: 0
   property bool cursorActive: false
 
-  readonly property bool hideWhenDisconnected: setting("hideWhenDisconnected", true) === true
+  readonly property bool hideWhenDisconnected: setting("hideWhenDisconnected", false) === true
   readonly property color foreground: bar ? bar.foreground : Color.foreground
   readonly property color urgent: bar ? bar.urgent : Color.urgent
   readonly property color dim: Qt.darker(foreground, 1.55)
@@ -62,6 +62,7 @@ Panel {
   // Rebuilt whenever a section appears, so j and k never land on a hidden control.
   readonly property var cursorRows: {
     var rows = []
+    if (pods.daemonReachable && !pods.schemaUnsupported) rows.push("connection")
     if (!pods.hasAirPods) return rows
     for (var i = 0; i < modes.length; i++) rows.push("mode:" + modes[i])
     if (adaptiveVisible) rows.push("adaptive")
@@ -95,6 +96,7 @@ Panel {
     else if (name === "ca") pods.setConversationalAwareness(!pods.conversationalAwareness)
     else if (name === "onebud") pods.setOneBudANC(!pods.oneBudANC)
     else if (name === "ear") pods.cycleEarDetection()
+    else if (name === "connection") pods.toggleConnection()
   }
 
   function focusRow(name) {
@@ -128,6 +130,12 @@ Panel {
     function toggle(): void { root.toggle() }
     function refresh(): string { pods.refresh(); return "ok" }
     function noise(): string { pods.cycleNoiseMode(); return "ok" }
+    function connection(): string {
+      if (!pods.daemonReachable || pods.schemaUnsupported) return "AirPods service unavailable"
+      if (pods.busy) return "AirPods command already in progress"
+      pods.toggleConnection()
+      return "Connection request sent"
+    }
     function status(): string { return Model.noiseModeName(pods.noiseMode) }
   }
 
@@ -234,6 +242,36 @@ Panel {
             font.family: root.fontFamily
             font.pixelSize: Style.font.bodySmall
             wrapMode: Text.WordWrap
+          }
+
+          CursorSurface {
+            visible: pods.daemonReachable && !pods.schemaUnsupported
+            width: parent.width
+            implicitHeight: connectionLabel.implicitHeight + Style.spacing.rowPaddingX
+            foreground: root.foreground
+            hasCursor: root.rowHasCursor("connection")
+            opacity: pods.busy ? 0.6 : 1.0
+
+            Text {
+              id: connectionLabel
+              anchors.centerIn: parent
+              text: pods.connectionBusy
+                ? (pods.connectionRequest === "disconnect" ? "Disconnecting…" : "Connecting…")
+                : (pods.hasAirPods ? "Disconnect from this PC" : "Connect to this PC")
+              color: root.foreground
+              font.family: root.fontFamily
+              font.pixelSize: Style.font.body
+              textFormat: Text.PlainText
+            }
+
+            MouseArea {
+              anchors.fill: parent
+              enabled: !pods.busy
+              hoverEnabled: true
+              cursorShape: Qt.PointingHandCursor
+              onEntered: root.focusRow("connection")
+              onClicked: pods.toggleConnection()
+            }
           }
 
           Column {

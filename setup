@@ -17,5 +17,5 @@ systemctl --user enable librepods.service
 systemctl --user restart librepods.service
 
 echo "librepods is running."
-echo "The bar icon stays hidden until AirPods are connected."
-echo "Keep it visible: omarchy bar set io.github.thisisgm.omapods hideWhenDisconnected false --json"
+echo "The bar icon stays available for connecting and disconnecting your AirPods."
+echo "Hide it when disconnected: omarchy bar set io.github.thisisgm.omapods hideWhenDisconnected true --json"

@@ -19,7 +19,7 @@
     "allowMultiple": false,
     "defaultSection": "right",
     "defaults": {
-      "hideWhenDisconnected": true,
+      "hideWhenDisconnected": false,
       "ctlPath": ""
     },
     "schema": [
@@ -27,7 +27,7 @@
         "key": "hideWhenDisconnected",
         "type": "boolean",
         "label": "Hide the icon when no AirPods are connected",
-        "defaultValue": true
+        "defaultValue": false
       },
       {
         "key": "ctlPath",

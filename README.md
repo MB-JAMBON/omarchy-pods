@@ -43,8 +43,8 @@
 
 - **Volume and output device** live in the stock Audio panel, which already
   switches PipeWire sinks. Press `Tab` in this panel to walk to it.
-- **Connect, disconnect and forget** live in the stock Bluetooth panel, and in
-  `omarchy bluetooth device`.
+- **Forget** lives in the stock Bluetooth panel, and in `omarchy bluetooth device`.
+  This fork adds connect and disconnect to the AirPods panel. See [the V1 scope](docs/V1.md).
 - **Spatial Audio** has no renderer on Linux, so there is nothing to draw and
   no row for it.
 - **Mic mode** is not an AirPods control. macOS applies Voice Isolation to the
@@ -158,11 +158,11 @@ installs to the same place.
 
 `setup` installs `cmake`, `ninja`, `qt6-connectivity`, `qt6-tools`,
 `qt6-declarative`, `pkgconf` and `libpulse` if they are missing, builds the
-daemon into `~/.local`, and enables `librepods.service`. The icon stays hidden
-until AirPods are connected (`hideWhenDisconnected`). To keep it visible:
+daemon into `~/.local`, and enables `librepods.service`. The icon stays visible
+to allow reconnection. To hide it while disconnected:
 
 ```bash
-omarchy bar set io.github.thisisgm.omapods hideWhenDisconnected false --json
+omarchy bar set io.github.thisisgm.omapods hideWhenDisconnected true --json
 ```
 
 To build the daemon by hand instead of running `setup`:
@@ -230,7 +230,7 @@ opening anything.
 
 | Setting | Default | Notes |
 |---------|---------|-------|
-| Hide when disconnected | on | Leaves the bar entirely rather than sitting there with nothing to say. |
+| Hide when disconnected | off | Keep the icon available to reconnect from the AirPods panel. |
 | Path to librepods-ctl | empty | Leave empty to find it on `PATH`. |
 
 ## Tests
