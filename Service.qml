@@ -7,6 +7,7 @@ Item {
   id: root
 
   property var settings: ({})
+  signal statusUpdated()
 
   property bool daemonReachable: false
   property bool connected: false
@@ -124,6 +125,7 @@ Item {
     oneBudANC = _settle("oneBudANC", status.oneBudANC)
     conversationalAwareness = _settle("conversationalAwareness", status.conversationalAwareness)
     earDetectionBehavior = _settle("earDetectionBehavior", status.earDetectionBehavior)
+    statusUpdated()
   }
 
   function _settle(field, reported) {

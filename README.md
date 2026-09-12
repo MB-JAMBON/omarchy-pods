@@ -13,6 +13,30 @@
   <img src="preview.png" alt="The AirPods panel open in the Omarchy bar" width="420">
 </p>
 
+## Animated connection card (this fork)
+
+A temporary native Qt Quick 3D card appears on connection, with the current
+Omarchy theme and real battery values. AirPods Pro use the optimized model:
+the lid opens, the earbuds rise, then the assembly turns once. Other AirPods
+use their existing icon. Unknown battery values remain unknown. Closing the
+card unloads the 3D scene. Requires `qt6-quick3d` and `qt6-quicktimeline`, installed
+by `setup`. Model credits and its separate CC BY 4.0 license are in
+[ATTRIBUTION.md](assets/airpods/ATTRIBUTION.md).
+
+```bash
+# Replay with the connected device and its real values.
+omarchy-shell omapods preview
+# Preview the Pro animation independently of the connected device.
+omarchy-shell omapods previewAnimation
+# Optional settings.
+omarchy bar set io.github.thisisgm.omapods showConnectionCard false --json
+omarchy bar set io.github.thisisgm.omapods animateConnectionCard false --json
+```
+
+The animation is a connection presentation, not a live reconstruction of the
+physical lid or earbud position. Shell reloads and battery updates do not replay
+it; a 15-second cooldown suppresses brief reconnects.
+
 ## What it shows
 
 - **Battery** for the left pod, the right pod and the case, each with a charging

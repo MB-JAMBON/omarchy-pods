@@ -6,12 +6,50 @@ import Quickshell.Io
 import qs.Commons
 import qs.Ui
 import "Model.js" as Model
+import "ConnectionEvents.js" as ConnectionEvents
 
 Panel {
   id: root
   moduleName: "io.github.thisisgm.omapods"
   ipcTarget: "omapods"
   manageIpc: false
+
+  property var connectionEvents: ConnectionEvents.newState()
+
+  function previewConnectionCard(demo = false) {
+    if (!demo && !pods.hasAirPods) return "Connect AirPods before opening the card"
+    connectionCard.active = false
+    connectionCard.setSource("ConnectionCard.qml", { pods: pods, previewOnly: demo,
+      animateModel: root.setting("animateConnectionCard", true) === true })
+    connectionCard.active = true
+    return "ok"
+  }
+
+  Loader {
+    id: connectionCard
+    active: false
+  }
+  Connections {
+    target: connectionCard.item
+    function onDismissed() { connectionCard.active = false }
+  }
+  Connections {
+    target: pods
+    function onStatusUpdated() {
+      if (ConnectionEvents.shouldShow(root.connectionEvents, pods.connected, Date.now())
+          && root.setting("showConnectionCard", true) === true) connectionDelay.restart()
+      if (!pods.connected) { connectionDelay.stop(); connectionCard.active = false }
+    }
+    function onDaemonReachableChanged() {
+      if (!pods.daemonReachable) { connectionDelay.stop(); connectionCard.active = false }
+    }
+  }
+  Timer {
+    id: connectionDelay
+    interval: 600
+    onTriggered: if (pods.hasAirPods && (!root.bar || root.bar.findPanelWidget(root.moduleName) === root))
+      root.previewConnectionCard()
+  }
 
   property int cursorIndex: 0
   property bool cursorActive: false
@@ -129,6 +167,9 @@ Panel {
     function close(): void { root.close() }
     function toggle(): void { root.toggle() }
     function refresh(): string { pods.refresh(); return "ok" }
+    function preview(): string { return root.previewConnectionCard() }
+    function previewAnimation(): string { return root.previewConnectionCard(true) }
+    function cardState(): string { return connectionCard.active ? "visible" : "closed" }
     function noise(): string { pods.cycleNoiseMode(); return "ok" }
     function connection(): string {
       if (!pods.daemonReachable || pods.schemaUnsupported) return "AirPods service unavailable"
