@@ -1,0 +1,59 @@
+#!/bin/bash
+
+set -euo pipefail
+
+old_id="io.github.thisisgm.omapods"
+new_id="io.github.mb-jambon.omapods"
+plugins_dir="$HOME/.config/omarchy/plugins"
+config="$HOME/.config/omarchy/shell.json"
+old_dir="$plugins_dir/$old_id"
+new_dir="$plugins_dir/$new_id"
+
+fail() {
+  echo "migrate-plugin-id: $*" >&2
+  exit 1
+}
+
+[[ -f "$config" ]] || fail "missing $config"
+command -v jq >/dev/null || fail "jq is required"
+
+old_dir_exists=false
+new_dir_exists=false
+[[ -e "$old_dir" || -L "$old_dir" ]] && old_dir_exists=true
+[[ -e "$new_dir" || -L "$new_dir" ]] && new_dir_exists=true
+
+if $old_dir_exists && $new_dir_exists; then
+  fail "both plugin directories exist; remove the duplicate before migrating"
+fi
+
+old_configured=false
+jq -e --arg old "$old_id" '.. | objects | select(.id? == $old)' "$config" >/dev/null && old_configured=true
+
+if ! $old_dir_exists && $new_dir_exists && ! $old_configured; then
+  echo "Plugin ID is already $new_id."
+  exit 0
+fi
+
+$old_dir_exists || $new_dir_exists || fail "AirPods plugin directory not found"
+
+temporary=$(mktemp "$plugins_dir/.omapods-shell.XXXXXX")
+trap 'rm -f "$temporary"' EXIT
+
+jq --arg old "$old_id" --arg new "$new_id" '
+  walk(if type == "object" and .id? == $old then .id = $new else . end)
+' "$config" > "$temporary"
+jq empty "$temporary"
+chmod --reference="$config" "$temporary"
+
+backup="$config.backup.$(date +%s)"
+cp -a "$config" "$backup"
+
+if $old_dir_exists; then
+  mv "$old_dir" "$new_dir"
+fi
+mv "$temporary" "$config"
+trap - EXIT
+
+omarchy-shell shell rescanPlugins
+echo "Migrated $old_id to $new_id."
+echo "Configuration backup: $backup"

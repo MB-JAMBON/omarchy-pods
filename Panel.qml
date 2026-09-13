@@ -10,11 +10,17 @@ import "ConnectionEvents.js" as ConnectionEvents
 
 Panel {
   id: root
-  moduleName: "io.github.thisisgm.omapods"
+  moduleName: "io.github.mb-jambon.omapods"
   ipcTarget: "omapods"
   manageIpc: false
 
   property var connectionEvents: ConnectionEvents.newState()
+
+  function ownsConnectionCard() {
+    if (!root.bar) return true
+    var widgets = root.bar.moduleWidgets(root.moduleName)
+    return widgets.length === 0 || widgets[0] === root
+  }
 
   function previewConnectionCard(demo = false) {
     if (!demo && !pods.hasAirPods) return "Connect AirPods before opening the card"
@@ -47,7 +53,7 @@ Panel {
   Timer {
     id: connectionDelay
     interval: 600
-    onTriggered: if (pods.hasAirPods && (!root.bar || root.bar.findPanelWidget(root.moduleName) === root))
+    onTriggered: if (pods.hasAirPods && root.ownsConnectionCard())
       root.previewConnectionCard()
   }
 

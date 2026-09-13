@@ -5,8 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="https://omarchyplugins.com/plugin.html?id=io.github.thisisgm.omapods"><img alt="On omarchyplugins.com" src="https://img.shields.io/badge/omarchyplugins.com-listed-8b5cf6"></a>
-  <a href="https://github.com/thisisgm/omarchy-pods/tags"><img alt="Latest tag" src="https://img.shields.io/github/v/tag/thisisgm/omarchy-pods?label=version"></a>
+  <a href="https://github.com/MB-JAMBON/omarchy-pods/releases"><img alt="Latest release" src="https://img.shields.io/github/v/release/MB-JAMBON/omarchy-pods?label=version"></a>
 </p>
 
 <p align="center">
@@ -29,8 +28,8 @@ omarchy-shell omapods preview
 # Preview the Pro animation independently of the connected device.
 omarchy-shell omapods previewAnimation
 # Optional settings.
-omarchy bar set io.github.thisisgm.omapods showConnectionCard false --json
-omarchy bar set io.github.thisisgm.omapods animateConnectionCard false --json
+omarchy bar set io.github.mb-jambon.omapods showConnectionCard false --json
+omarchy bar set io.github.mb-jambon.omapods animateConnectionCard false --json
 ```
 
 The animation is a connection presentation, not a live reconstruction of the
@@ -172,13 +171,13 @@ of writing. Nothing in this daemon does that today.
 ## Install
 
 ```bash
-omarchy plugin add https://github.com/thisisgm/omarchy-pods --enable
-~/.config/omarchy/plugins/io.github.thisisgm.omapods/setup
+omarchy plugin add https://github.com/MB-JAMBON/omarchy-pods --enable
+~/.config/omarchy/plugins/io.github.mb-jambon.omapods/setup
 ```
 
-`--enable` already places the widget on the right of the bar. The
-[marketplace listing](https://omarchyplugins.com/plugin.html?id=io.github.thisisgm.omapods)
-installs to the same place.
+`--enable` places the widget on the right of the bar. This fork has its own
+plugin identity, keeping its installation and updates separate from the
+original marketplace entry.
 
 `setup` installs `cmake`, `ninja`, `qt6-connectivity`, `qt6-tools`,
 `qt6-declarative`, `pkgconf` and `libpulse` if they are missing, builds the
@@ -186,14 +185,27 @@ daemon into `~/.local`, and enables `librepods.service`. The icon stays visible
 to allow reconnection. To hide it while disconnected:
 
 ```bash
-omarchy bar set io.github.thisisgm.omapods hideWhenDisconnected true --json
+omarchy bar set io.github.mb-jambon.omapods hideWhenDisconnected true --json
 ```
+
+### Upgrade from v1.4.0
+
+Version 1.5.0 gives this fork its own plugin ID. After updating the existing
+checkout, run the migration once:
+
+```bash
+~/.config/omarchy/plugins/io.github.thisisgm.omapods/migrate-plugin-id
+```
+
+It renames the plugin directory and replaces only the exact old widget ID in
+`shell.json`, preserving its section, position and settings. A timestamped copy
+of `shell.json` is created before the change.
 
 To build the daemon by hand instead of running `setup`:
 
 ```bash
 omarchy pkg add cmake ninja qt6-connectivity qt6-tools qt6-declarative pkgconf libpulse
-cd ~/.config/omarchy/plugins/io.github.thisisgm.omapods/daemon
+cd ~/.config/omarchy/plugins/io.github.mb-jambon.omapods/daemon
 cmake -B build -G Ninja -DBUILD_TESTING=OFF && cmake --build build
 cmake --install build --prefix ~/.local
 systemctl --user daemon-reload
@@ -210,9 +222,9 @@ which is where the panel finds `librepods-ctl`. The unit is bound to
 
 ```bash
 systemctl --user disable --now librepods.service
-xargs rm -f < ~/.config/omarchy/plugins/io.github.thisisgm.omapods/daemon/build/install_manifest.txt
+xargs rm -f < ~/.config/omarchy/plugins/io.github.mb-jambon.omapods/daemon/build/install_manifest.txt
 rm -rf ~/.config/AirPodsTrayApp ~/.local/state/librepods
-omarchy plugin remove io.github.thisisgm.omapods
+omarchy plugin remove io.github.mb-jambon.omapods
 ```
 
 The daemon installs into `~/.local`, so it outlives the plugin. CMake lists what it
@@ -284,8 +296,9 @@ a modified copy of his work, and this panel is a display for it.
 
 ## Support
 
-If this saved you an afternoon, you can
-[buy me a coffee](https://buymeacoffee.com/thisisgm).
+The original plugin is maintained by
+[GM](https://github.com/thisisgm/omarchy-pods). This fork adds the connection
+controls and animated AirPods experience.
 
 ## Licence
 
