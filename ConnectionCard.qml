@@ -21,11 +21,110 @@ Item {
   readonly property bool showProModel: previewOnly ? previewModel !== "max" : pods && pods.isProSeries
   readonly property bool showThreeDimensionalModel: showMaxModel || showProModel
   readonly property int animationEnd: showMaxModel ? 7800 : 8500
+  readonly property int lowBatteryPercent: 20
 
   readonly property var targetScreen: Quickshell.screens.find(screen =>
     Hyprland.focusedMonitor && screen.name === Hyprland.focusedMonitor.name) || Quickshell.screens[0]
 
   function close() { hideTimer.stop(); exitAnimation.start() }
+
+  function previewBattery(part) {
+    if (part === "left") return { level: 95, charging: true }
+    if (part === "right") return { level: 76, charging: false }
+    if (part === "case") return { level: 18, charging: false }
+    return { level: 82, charging: false }
+  }
+
+  component BatteryRing: ColumnLayout {
+    id: batteryRing
+    required property string label
+    required property var battery
+    readonly property int level: battery && battery.level !== undefined ? battery.level : Model.LEVEL_UNKNOWN
+    readonly property bool charging: battery && battery.charging === true
+    readonly property bool low: level !== Model.LEVEL_UNKNOWN && level <= root.lowBatteryPercent && !charging
+    readonly property color indicatorColor: low ? Color.urgent : Color.accent
+
+    spacing: Style.space(5)
+
+    Item {
+      Layout.alignment: Qt.AlignHCenter
+      implicitWidth: Style.space(64)
+      implicitHeight: Style.space(64)
+
+      Canvas {
+        id: batteryCanvas
+        anchors.fill: parent
+        property real fraction: Model.levelFraction(batteryRing.level)
+        property color activeColor: batteryRing.indicatorColor
+        property color trackColor: Util.alpha(Color.popups.text, 0.13)
+
+        onFractionChanged: requestPaint()
+        onActiveColorChanged: requestPaint()
+        onTrackColorChanged: requestPaint()
+        onWidthChanged: requestPaint()
+        onHeightChanged: requestPaint()
+        onPaint: {
+          var context = getContext("2d")
+          var lineWidth = Math.max(3, Style.space(5))
+          var center = width / 2
+          var radius = Math.max(1, center - lineWidth)
+          var start = -Math.PI / 2
+
+          context.reset()
+          context.lineWidth = lineWidth
+          context.lineCap = "round"
+          context.strokeStyle = trackColor
+          context.beginPath()
+          context.arc(center, center, radius, 0, Math.PI * 2)
+          context.stroke()
+
+          if (fraction > 0) {
+            context.strokeStyle = activeColor
+            context.beginPath()
+            context.arc(center, center, radius, start, start + Math.PI * 2 * fraction)
+            context.stroke()
+          }
+        }
+      }
+
+      Text {
+        anchors.centerIn: parent
+        text: Model.levelText(batteryRing.level)
+        color: batteryRing.low ? Color.urgent : Color.popups.text
+        font.family: Style.font.family
+        font.pixelSize: Style.font.bodySmall
+        font.weight: Font.DemiBold
+      }
+
+      Rectangle {
+        anchors { right: parent.right; bottom: parent.bottom }
+        width: Style.space(20)
+        height: width
+        radius: width / 2
+        visible: batteryRing.charging
+        color: Color.popups.background
+        border.width: Math.max(1, Style.space(1))
+        border.color: Color.accent
+
+        Text {
+          anchors.centerIn: parent
+          text: "\uf0e7"
+          color: Color.accent
+          font.family: Style.font.family
+          font.pixelSize: Style.font.caption
+        }
+      }
+    }
+
+    Text {
+      Layout.fillWidth: true
+      horizontalAlignment: Text.AlignHCenter
+      text: batteryRing.label
+      color: batteryRing.low ? Color.urgent : Color.popups.text
+      font.family: Style.font.family
+      font.pixelSize: Style.font.bodySmall
+    }
+  }
 
   PanelWindow {
     id: window
@@ -137,39 +236,16 @@ Item {
           spacing: Style.space(14)
           Repeater {
             model: root.showMaxModel ? ["headset"] : ["left", "right", "case"]
-            ColumnLayout {
+            BatteryRing {
               required property string modelData
               Layout.fillWidth: true
-              readonly property var battery: root.previewOnly || !root.pods ? ({ level: -1, charging: false })
+              battery: root.previewOnly ? root.previewBattery(modelData)
+                : !root.pods ? ({ level: Model.LEVEL_UNKNOWN, charging: false })
                 : modelData === "left" ? root.pods.leftPod
                 : modelData === "right" ? root.pods.rightPod
                 : modelData === "headset" ? root.pods.headsetBattery : root.pods.caseBattery
-              spacing: Style.space(6)
-              Text {
-                Layout.fillWidth: true
-                horizontalAlignment: Text.AlignHCenter
-                text: Model.levelText(parent.battery.level)
-                color: Color.popups.text
-                font.family: Style.font.family
-                font.pixelSize: Style.font.heading
-              }
-              Text {
-                Layout.fillWidth: true
-                horizontalAlignment: Text.AlignHCenter
-                text: parent.modelData === "left" ? "Gauche" : parent.modelData === "right" ? "Droite"
-                  : parent.modelData === "headset" ? "Casque" : "Boîtier"
-                color: Color.popups.text
-                font.family: Style.font.family
-                font.pixelSize: Style.font.bodySmall
-              }
-              Text {
-                Layout.fillWidth: true
-                horizontalAlignment: Text.AlignHCenter
-                text: parent.battery.charging ? "En charge" : ""
-                color: Color.accent
-                font.family: Style.font.family
-                font.pixelSize: Style.font.caption
-              }
+              label: modelData === "left" ? "Gauche" : modelData === "right" ? "Droite"
+                : modelData === "headset" ? "Casque" : "Boîtier"
             }
           }
         }

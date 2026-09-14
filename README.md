@@ -25,6 +25,11 @@ installed by `setup`. Both derived models retain their separate CC BY 4.0
 licenses and credits: [AirPods Pro](assets/airpods/ATTRIBUTION.md) and
 [AirPods Max](assets/airpods-max/ATTRIBUTION.md).
 
+Battery is shown as a separate circular meter for each earbud and the case.
+Charging adds a lightning badge, while a level at or below 20% switches the
+meter and label to the active Omarchy theme's urgent color. AirPods Max use one
+meter for the headset battery.
+
 | AirPods Pro | AirPods Max |
 |:---:|:---:|
 | <img src="docs/connection-card-pro.png" alt="Animated AirPods Pro connection card" width="300"> | <img src="docs/connection-card-max.png" alt="Animated AirPods Max connection card" width="300"> |
