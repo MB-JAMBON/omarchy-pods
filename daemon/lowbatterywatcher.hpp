@@ -1,49 +1,52 @@
 #pragma once
 
 #include <QtGlobal>
+#include <array>
 #include <optional>
 
-// Stateful low-battery latch for a single battery source (one pod or
-// the case). Asymmetric hysteresis prevents repeated notifications
-// when a source hovers near the threshold on noisy battery readings:
-// trips once at level <= triggerLevel, clears the latch only when
-// level rises back to >= resetLevel. Charging clears the latch
-// immediately so a brief plug-pull near the threshold doesn't
-// lock out future warnings.
-//
-// evaluate() returns the source's level percent when a notification
-// SHOULD fire this update, or std::nullopt when no transition
-// occurred. Callers format the user-visible message — the latch
-// only owns the trip state.
-class LowBatteryLatch {
-public:
-    constexpr explicit LowBatteryLatch(quint8 trigger = 10, quint8 reset = 15)
-        : m_trigger(trigger), m_reset(reset) {}
+struct LowBatteryAlert {
+    quint8 threshold;
+    quint8 level;
+};
 
-    std::optional<quint8> evaluate(quint8 level, bool available, bool charging) {
+// Tracks the three warnings for one battery group across a discharge cycle.
+class LowBatteryWatcher {
+public:
+    static constexpr std::array<quint8, 3> thresholds = {20, 10, 5};
+    static constexpr quint8 resetLevel = 25;
+
+    std::optional<LowBatteryAlert> evaluate(quint8 level, bool available, bool charging)
+    {
         if (!available) return std::nullopt;
-        if (charging) {
-            m_notified = false;
+        if (charging || level >= resetLevel) {
+            reset();
             return std::nullopt;
         }
-        if (level <= m_trigger && !m_notified) {
-            m_notified = true;
-            return level;
+
+        int crossed = -1;
+        for (int index = 0; index < static_cast<int>(thresholds.size()); ++index) {
+            if (level <= thresholds[index] && !notifiedAt(thresholds[index])) crossed = index;
         }
-        if (level >= m_reset) {
-            m_notified = false;
+        if (crossed < 0) return std::nullopt;
+
+        for (int index = 0; index <= crossed; ++index) {
+            m_notifiedMask |= static_cast<quint8>(1U << index);
         }
-        return std::nullopt;
+        return LowBatteryAlert { thresholds[crossed], level };
     }
 
-    bool notified() const { return m_notified; }
-    quint8 trigger() const { return m_trigger; }
-    quint8 reset() const { return m_reset; }
+    bool notifiedAt(quint8 threshold) const
+    {
+        for (int index = 0; index < static_cast<int>(thresholds.size()); ++index) {
+            if (thresholds[index] == threshold) {
+                return (m_notifiedMask & static_cast<quint8>(1U << index)) != 0;
+            }
+        }
+        return false;
+    }
 
-    void resetLatch() { m_notified = false; }
+    void reset() { m_notifiedMask = 0; }
 
 private:
-    quint8 m_trigger;
-    quint8 m_reset;
-    bool m_notified = false;
+    quint8 m_notifiedMask = 0;
 };

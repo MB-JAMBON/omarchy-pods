@@ -190,7 +190,7 @@ Item {
               tonemapMode: SceneEnvironment.TonemapModeAces
             }
             PerspectiveCamera {
-              position: Qt.vector3d(0, root.showMaxModel ? 1.8 : 1.3, root.showMaxModel ? 32 : 15)
+              position: Qt.vector3d(0, root.showMaxModel ? 1.8 : 1.3, root.showMaxModel ? 34 : 15)
               eulerRotation.x: root.showMaxModel ? 0 : -4
               clipNear: 0.1
               clipFar: 100
@@ -206,7 +206,7 @@ Item {
               source: root.showMaxModel
                 ? "assets/airpods-max/Air_pods_max_animated.qml"
                 : "assets/airpods/Air_pods_pro_animated.qml"
-              y: root.showMaxModel ? -3.5 : -0.6
+              y: root.showMaxModel ? -1.4 : -0.6
               onLoaded: {
                 item.animationFrame = root.animateModel ? 0 : root.animationEnd
                 if (root.animateModel) modelAnimation.start()

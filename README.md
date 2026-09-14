@@ -30,6 +30,11 @@ Charging adds a lightning badge, while a level at or below 20% switches the
 meter and label to the active Omarchy theme's urgent color. AirPods Max use one
 meter for the headset battery.
 
+Low-battery notifications fire once at 20%, 10% and 5% during each discharge
+cycle. The earbuds share one warning sequence, so left and right cannot create
+duplicate alerts, while the case keeps its own sequence. Charging rearms the
+corresponding sequence.
+
 | AirPods Pro | AirPods Max |
 |:---:|:---:|
 | <img src="docs/connection-card-pro.png" alt="Animated AirPods Pro connection card" width="300"> | <img src="docs/connection-card-max.png" alt="Animated AirPods Max connection card" width="300"> |

@@ -391,42 +391,51 @@ public slots:
         setNoiseControlMode(static_cast<NoiseControlMode>(mode));
     }
 
-    // Walk every battery source on each battery-status change and
-    // delegate the trip/reset decision to its LowBatteryLatch. Format
-    // + emit the user-visible toast here; the latch owns no UI. The
-    // global notificationsEnabled setting still gates emission via
-    // Notifier::notify.
+    // The two watchers keep earbud and case warnings independent.
     void checkLowBatteryThresholds()
     {
         if (!m_deviceInfo) return;
         Battery *b = m_deviceInfo->getBattery();
         if (!b) return;
 
-        struct Source {
-            const char *label;
-            quint8 level;
-            bool available;
-            bool charging;
-            LowBatteryLatch *latch;
-        };
-        const Source sources[] = {
-            { "Left",  b->getLeftPodLevel(),  b->isLeftPodAvailable(),
-              b->isLeftPodCharging(),  &m_lowBatteryLatchLeft },
-            { "Right", b->getRightPodLevel(), b->isRightPodAvailable(),
-              b->isRightPodCharging(), &m_lowBatteryLatchRight },
-            { "Case",  b->getCaseLevel(),     b->isCaseAvailable(),
-              b->isCaseCharging(),     &m_lowBatteryLatchCase },
+        const auto notify = [this](LowBatteryWatcher &watcher, quint8 level,
+                                   bool available, bool charging, const QString &title) {
+            const auto alert = watcher.evaluate(level, available, charging);
+            if (alert) {
+                m_notifier->notify(title, tr("%1% remaining").arg(alert->level));
+            }
         };
 
-        for (const Source &s : sources)
-        {
-            const auto fire = s.latch->evaluate(s.level, s.available, s.charging);
-            if (fire) {
-                m_notifier->notify(
-                    tr("%1 AirPod Low Battery").arg(QString::fromLatin1(s.label)),
-                    tr("%1% remaining").arg(*fire));
+        if (b->isHeadsetAvailable()) {
+            notify(m_lowBatteryWatcherEarbuds, b->getHeadsetLevel(), true,
+                   b->isHeadsetCharging(), tr("AirPods Max Low Battery"));
+        } else {
+            bool anyAvailable = false;
+            bool anyDischarging = false;
+            quint8 lowestLevel = 100;
+            const struct {
+                quint8 level;
+                bool available;
+                bool charging;
+            } earbuds[] = {
+                { b->getLeftPodLevel(), b->isLeftPodAvailable(), b->isLeftPodCharging() },
+                { b->getRightPodLevel(), b->isRightPodAvailable(), b->isRightPodCharging() },
+            };
+
+            for (const auto &earbud : earbuds) {
+                if (!earbud.available) continue;
+                anyAvailable = true;
+                if (earbud.charging) continue;
+                anyDischarging = true;
+                lowestLevel = qMin(lowestLevel, earbud.level);
             }
+
+            notify(m_lowBatteryWatcherEarbuds, lowestLevel, anyAvailable,
+                   anyAvailable && !anyDischarging, tr("AirPods Low Battery"));
         }
+
+        notify(m_lowBatteryWatcherCase, b->getCaseLevel(), b->isCaseAvailable(),
+               b->isCaseCharging(), tr("AirPods Case Low Battery"));
     }
 
     // Cycle the noise-control mode in the same order the PodsMenu
@@ -1670,14 +1679,8 @@ private:
     int m_oneBudANCChangesTotal = 0;
     int m_reopenCallsTotal = 0;
 
-    // Low-battery notification latches per battery source. State +
-    // hysteresis live in LowBatteryLatch (see lowbatterywatcher.hpp);
-    // tst_lowbatterywatcher.cpp exhaustively covers the trip/reset
-    // transitions so this slot only needs to feed the three sources
-    // through their respective latches and format the message.
-    LowBatteryLatch m_lowBatteryLatchLeft;
-    LowBatteryLatch m_lowBatteryLatchRight;
-    LowBatteryLatch m_lowBatteryLatchCase;
+    LowBatteryWatcher m_lowBatteryWatcherEarbuds;
+    LowBatteryWatcher m_lowBatteryWatcherCase;
 
 public:
     int reconnectAttemptsTotal() const { return m_reconnectAttemptsTotal; }
