@@ -1,4 +1,4 @@
-<h1 align="center">AirPods for Omarchy</h1>
+<h1 align="center">AirPods Experience for Omarchy</h1>
 
 <p align="center">
   Battery for each pod and the case, the listening modes, adaptive noise level, Conversation Awareness, One-Bud ANC and ear detection, drawn in Omarchy's own panel idiom.
@@ -16,17 +16,25 @@
 
 A temporary native Qt Quick 3D card appears on connection, with the current
 Omarchy theme and real battery values. AirPods Pro use the optimized model:
-the lid opens, the earbuds rise, then the assembly turns once. Other AirPods
-use their existing icon. Unknown battery values remain unknown. Closing the
-card unloads the 3D scene. Requires `qt6-quick3d` and `qt6-quicktimeline`, installed
-by `setup`. Model credits and its separate CC BY 4.0 license are in
-[ATTRIBUTION.md](assets/airpods/ATTRIBUTION.md).
+the lid opens, the earbuds rise, then the assembly turns once. AirPods Max rise
+into place while their earcups move outward, then the headset turns once. Other
+AirPods use their existing icon. Unknown battery values remain unknown. Closing
+the card unloads the 3D scene. Requires `qt6-quick3d` and `qt6-quicktimeline`,
+installed by `setup`. Both derived models retain their separate CC BY 4.0
+licenses and credits: [AirPods Pro](assets/airpods/ATTRIBUTION.md) and
+[AirPods Max](assets/airpods-max/ATTRIBUTION.md).
+
+| AirPods Pro | AirPods Max |
+|:---:|:---:|
+| <img src="docs/connection-card-pro.png" alt="Animated AirPods Pro connection card" width="300"> | <img src="docs/connection-card-max.png" alt="Animated AirPods Max connection card" width="300"> |
 
 ```bash
 # Replay with the connected device and its real values.
 omarchy-shell omapods preview
 # Preview the Pro animation independently of the connected device.
 omarchy-shell omapods previewAnimation
+# Preview the Max animation independently of the connected device.
+omarchy-shell omapods previewMaxAnimation
 # Optional settings.
 omarchy bar set io.github.mb-jambon.omapods showConnectionCard false --json
 omarchy bar set io.github.mb-jambon.omapods animateConnectionCard false --json
@@ -309,6 +317,8 @@ separate works that talk over a state file and a command line.
 |---|---|---|
 | repository root, the bar widget | MIT | [LICENSE](LICENSE) |
 | `daemon/`, a modified copy of librepods | GPL-3.0 | [daemon/LICENSE](daemon/LICENSE) |
+| `assets/airpods/`, derived AirPods Pro model | CC BY 4.0 | [attribution](assets/airpods/ATTRIBUTION.md) |
+| `assets/airpods-max/`, derived AirPods Max model | CC BY 4.0 | [attribution](assets/airpods-max/ATTRIBUTION.md) |
 
 Shipping both in one repository is aggregation, not combination, so the widget
 stays MIT and the daemon stays GPL-3.0. What was modified, and the upstream

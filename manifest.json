@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "id": "io.github.mb-jambon.omapods",
-  "name": "AirPods",
-  "version": "1.5.0",
+  "name": "AirPods Experience",
+  "version": "1.6.0",
   "author": "MB-JAMBON",
   "license": "MIT",
-  "description": "AirPods in the Omarchy bar: per-pod and case battery, listening mode, adaptive noise level, conversation awareness, one-bud ANC and ear detection.",
+  "description": "AirPods controls, detailed battery state and native animated connection cards for Omarchy.",
   "kinds": [
     "bar-widget"
   ],

@@ -22,10 +22,10 @@ Panel {
     return widgets.length === 0 || widgets[0] === root
   }
 
-  function previewConnectionCard(demo = false) {
+  function previewConnectionCard(demo = false, previewModel = "pro") {
     if (!demo && !pods.hasAirPods) return "Connect AirPods before opening the card"
     connectionCard.active = false
-    connectionCard.setSource("ConnectionCard.qml", { pods: pods, previewOnly: demo,
+    connectionCard.setSource("ConnectionCard.qml", { pods: pods, previewOnly: demo, previewModel: previewModel,
       animateModel: root.setting("animateConnectionCard", true) === true })
     connectionCard.active = true
     return "ok"
@@ -175,6 +175,7 @@ Panel {
     function refresh(): string { pods.refresh(); return "ok" }
     function preview(): string { return root.previewConnectionCard() }
     function previewAnimation(): string { return root.previewConnectionCard(true) }
+    function previewMaxAnimation(): string { return root.previewConnectionCard(true, "max") }
     function cardState(): string { return connectionCard.active ? "visible" : "closed" }
     function noise(): string { pods.cycleNoiseMode(); return "ok" }
     function connection(): string {

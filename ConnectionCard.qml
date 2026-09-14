@@ -7,16 +7,20 @@ import Quickshell.Wayland
 import qs.Commons
 import qs.Ui
 import "Model.js" as Model
-import "assets/airpods" as Assets
 
 Item {
   id: root
   property var pods: null
   property bool animateModel: true
   property bool previewOnly: false
+  property string previewModel: "pro"
   signal dismissed()
   readonly property int displayMs: animateModel ? 9800 : 5000
   readonly property int transitionMs: animateModel ? 250 : 0
+  readonly property bool showMaxModel: previewOnly ? previewModel === "max" : pods && pods.isHeadset
+  readonly property bool showProModel: previewOnly ? previewModel !== "max" : pods && pods.isProSeries
+  readonly property bool showThreeDimensionalModel: showMaxModel || showProModel
+  readonly property int animationEnd: showMaxModel ? 7800 : 8500
 
   readonly property var targetScreen: Quickshell.screens.find(screen =>
     Hyprland.focusedMonitor && screen.name === Hyprland.focusedMonitor.name) || Quickshell.screens[0]
@@ -53,7 +57,9 @@ Item {
         Text {
           Layout.fillWidth: true
           Layout.rightMargin: Style.space(16)
-          text: root.previewOnly ? "AirPods Pro · aperçu" : root.pods && root.pods.deviceName ? root.pods.deviceName : "AirPods"
+          text: root.previewOnly
+            ? (root.showMaxModel ? "AirPods Max · aperçu" : "AirPods Pro · aperçu")
+            : root.pods && root.pods.deviceName ? root.pods.deviceName : "AirPods"
           textFormat: Text.PlainText
           color: Color.popups.text
           font.family: Style.font.family
@@ -75,44 +81,50 @@ Item {
           Layout.fillHeight: true
           View3D {
             anchors.fill: parent
-            visible: root.previewOnly || (root.pods && root.pods.isProSeries)
+            visible: root.showThreeDimensionalModel
             environment: SceneEnvironment {
               backgroundMode: SceneEnvironment.Transparent
               antialiasingMode: SceneEnvironment.MSAA
               antialiasingQuality: SceneEnvironment.High
               lightProbe: Texture { source: "assets/airpods/studio.hdr" }
-              probeExposure: 0.8
+              probeExposure: root.showMaxModel ? 1.25 : 0.8
               tonemapMode: SceneEnvironment.TonemapModeAces
             }
             PerspectiveCamera {
-              position: Qt.vector3d(0, 1.3, 15)
-              eulerRotation.x: -4
+              position: Qt.vector3d(0, root.showMaxModel ? 1.8 : 1.3, root.showMaxModel ? 32 : 15)
+              eulerRotation.x: root.showMaxModel ? 0 : -4
               clipNear: 0.1
               clipFar: 100
               fieldOfView: 36
             }
             DirectionalLight {
               eulerRotation: Qt.vector3d(-30, -30, 0)
-              brightness: 1
-              ambientColor: "#555555"
+              brightness: root.showMaxModel ? 1.8 : 1
+              ambientColor: root.showMaxModel ? "#999999" : "#555555"
             }
-            Assets.Air_pods_pro_animated {
-              id: airpods
-              y: -0.6
-              animationFrame: root.animateModel ? 0 : 3100
+            Loader3D {
+              id: modelLoader
+              source: root.showMaxModel
+                ? "assets/airpods-max/Air_pods_max_animated.qml"
+                : "assets/airpods/Air_pods_pro_animated.qml"
+              y: root.showMaxModel ? -3.5 : -0.6
+              onLoaded: {
+                item.animationFrame = root.animateModel ? 0 : root.animationEnd
+                if (root.animateModel) modelAnimation.start()
+              }
             }
             NumberAnimation {
-              target: airpods
+              id: modelAnimation
+              target: modelLoader.item
               property: "animationFrame"
               from: 0
-              to: 8500
-              duration: 8500
-              running: root.animateModel
+              to: root.animationEnd
+              duration: root.animationEnd
             }
           }
           AirPodsIcon {
             anchors.centerIn: parent
-            visible: !root.previewOnly && root.pods && !root.pods.isProSeries
+            visible: !root.showThreeDimensionalModel
             variant: root.pods && root.pods.isHeadset ? "max" : "buds"
             iconSize: Style.space(100)
             color: Color.popups.text
@@ -124,7 +136,7 @@ Item {
           Layout.fillWidth: true
           spacing: Style.space(14)
           Repeater {
-            model: !root.previewOnly && root.pods && root.pods.isHeadset ? ["headset"] : ["left", "right", "case"]
+            model: root.showMaxModel ? ["headset"] : ["left", "right", "case"]
             ColumnLayout {
               required property string modelData
               Layout.fillWidth: true
