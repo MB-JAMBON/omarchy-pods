@@ -10,7 +10,8 @@ plugin code license. No endorsement by the original author is implied.
 
 Modifications on 2026-09-14: unused scene objects removed, geometry simplified,
 textures resized to at most 512 pixels and encoded as WebP, animated earcup
-placement and presentation rotation. Converted to Qt Quick 3D assets using Qt
+placement and presentation rotation, and materials recolored to a white and
+silver finish. Converted to Qt Quick 3D assets using Qt
 6 balsam. Added an external animationFrame property and removed the generated
 infinite TimelineAnimation so the connection card controls playback.
 

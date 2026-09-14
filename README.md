@@ -16,8 +16,9 @@
 
 A temporary native Qt Quick 3D card appears on connection, with the current
 Omarchy theme and real battery values. AirPods Pro use the optimized model:
-the lid opens, the earbuds rise, then the assembly turns once. AirPods Max rise
-into place while their earcups move outward, then the headset turns once. Other
+the lid opens, the earbuds rise, then the assembly turns once. AirPods Max use
+a white and silver finish, rise into place while their earcups move outward,
+then the headset turns once. Other
 AirPods use their existing icon. Unknown battery values remain unknown. Closing
 the card unloads the 3D scene. Requires `qt6-quick3d` and `qt6-quicktimeline`,
 installed by `setup`. Both derived models retain their separate CC BY 4.0

@@ -68,9 +68,9 @@ Node {
     PrincipledMaterial {
         id: dpauuenuPBdCvhC_material
         objectName: "DpauuenuPBdCvhC"
-        baseColor: "#ff000000"
-        roughness: 1
-        emissiveFactor: Qt.vector3d(0.0279413, 0.0279413, 0.0279413)
+        baseColor: "#ffd5d9de"
+        roughness: 0.82
+        emissiveFactor: Qt.vector3d(0.04, 0.04, 0.04)
         cullMode: PrincipledMaterial.NoCulling
         alphaMode: PrincipledMaterial.Opaque
     }
@@ -115,8 +115,8 @@ Node {
     PrincipledMaterial {
         id: lreQKsjeIoeplRB_material
         objectName: "LReQKsjeIoeplRB"
-        baseColor: "#ff000000"
-        roughness: 0.8999999761581421
+        baseColor: "#ffd9dde1"
+        roughness: 0.9
         cullMode: PrincipledMaterial.NoCulling
         alphaMode: PrincipledMaterial.Opaque
     }
@@ -133,39 +133,36 @@ Node {
     PrincipledMaterial {
         id: rs_Material_material
         objectName: "RS_Material"
-        baseColor: "#ff000000"
-        roughness: 1
+        baseColor: "#ffe8ebee"
+        metalness: 0.58
+        roughness: 0.34
         cullMode: PrincipledMaterial.NoCulling
         alphaMode: PrincipledMaterial.Opaque
     }
     PrincipledMaterial {
         id: diaLtZsVVXWBwMe_material
         objectName: "DiaLtZsVVXWBwMe"
-        baseColorMap: _4_texture
-        metalnessMap: _5_texture
-        roughnessMap: _5_texture
-        metalness: 1
-        roughness: 1
-        emissiveMap: _6_texture
-        emissiveFactor: Qt.vector3d(1, 1, 1)
+        baseColor: "#fff2f4f5"
+        metalness: 0.72
+        roughness: 0.27
         cullMode: PrincipledMaterial.NoCulling
         alphaMode: PrincipledMaterial.Opaque
     }
     PrincipledMaterial {
         id: deFxnmzQHJkzqmx_material
         objectName: "DeFxnmzQHJkzqmx"
-        baseColor: "#ff000000"
-        roughness: 1
-        emissiveFactor: Qt.vector3d(0.294964, 0.294964, 0.294964)
+        baseColor: "#ffcfd4d9"
+        roughness: 0.78
+        emissiveFactor: Qt.vector3d(0.04, 0.04, 0.04)
         cullMode: PrincipledMaterial.NoCulling
         alphaMode: PrincipledMaterial.Opaque
     }
     PrincipledMaterial {
         id: cufifJQVFGKEXjK_material
         objectName: "CufifJQVFGKEXjK"
-        baseColor: "#ffc7dded"
-        metalness: 1
-        roughness: 0.5243171453475952
+        baseColor: "#ffe4e8eb"
+        metalness: 0.75
+        roughness: 0.32
         cullMode: PrincipledMaterial.NoCulling
         alphaMode: PrincipledMaterial.Opaque
     }
