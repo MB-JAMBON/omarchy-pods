@@ -91,7 +91,7 @@ function podFrom(raw) {
 // {"adaptive_level_changes_total":0,"adaptive_noise_level":50,"ca_changes_total":0,
 //  "case":{"available":true,"charging":false,"level":100},"connect_calls_total":0,
 //  "connect_failures_total":0,"connected":true,"conversational_awareness":true,
-//  "device_name":"GM’s AirPods Pro","disconnect_calls_total":0,
+//  "device_name":"Sample’s AirPods Pro","disconnect_calls_total":0,
 //  "disconnect_failures_total":0,"ear_detection_behavior":0,
 //  "ear_detection_changes_total":0,"forget_calls_total":0,"is_pro_series":true,
 //  "left":{"available":true,"charging":false,"in_ear":false,"level":79},

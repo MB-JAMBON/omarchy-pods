@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 3.16)
 
 project(linux VERSION 0.1 LANGUAGES CXX)
 
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(Qt6 REQUIRED COMPONENTS Quick QuickControls2 Widgets Bluetooth DBus LinguistTools)
 find_package(OpenSSL REQUIRED)
@@ -10,6 +12,7 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(PULSEAUDIO REQUIRED libpulse)
 
 qt_standard_project_setup()
+qt_policy(SET QTP0001 NEW)
 
 # Translation files
 set(TS_FILES

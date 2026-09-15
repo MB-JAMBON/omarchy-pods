@@ -1,5 +1,9 @@
 # OpenPods on Linux (fork of LibrePods)
 
+> This file is retained from the upstream daemon. To install or remove the
+> Omarchy plugin, follow the repository [README](../README.md); the commands
+> below describe the optional upstream desktop application.
+
 A new rewrite is being worked upon. Please look at the list of features in the root README to see what's supported in the new version. 
 
 The rewrite can be found in the `linux/rust` branch [here](https://github.com/kavishdevar/librepods/tree/linux/rust/linux-rust). Follow the development in [PR #241](https://github.com/kavishdevar/librepods/pull/241). 

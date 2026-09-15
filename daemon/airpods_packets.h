@@ -21,7 +21,7 @@ namespace AirPodsPackets
         static const QByteArray TRANSPARENCY = ControlCommand::createCommand(0x0D, 0x03);
         static const QByteArray ADAPTIVE = ControlCommand::createCommand(0x0D, 0x04);
 
-        static const QByteArray getPacketForMode(AirpodsTrayApp::Enums::NoiseControlMode mode)
+        inline QByteArray getPacketForMode(AirpodsTrayApp::Enums::NoiseControlMode mode)
         {
             switch (mode)
             {
@@ -70,7 +70,7 @@ namespace AirPodsPackets
         inline std::optional<bool> parseState(const QByteArray &data) { return Type::parseState(data); }
 
         // Keep custom interval function
-        static QByteArray getIntervalPacket(quint8 interval)
+        inline QByteArray getIntervalPacket(quint8 interval)
         {
             return ControlCommand::createCommand(0x23, interval);
         }
@@ -177,7 +177,7 @@ namespace AirPodsPackets
 
     namespace Rename
     {
-        static QByteArray getPacket(const QString &newName)
+        inline QByteArray getPacket(const QString &newName)
         {
             QByteArray nameBytes = newName.toUtf8();                   // Convert name to UTF-8
             quint8 size = static_cast<char>(nameBytes.size());         // Name length (1 byte)

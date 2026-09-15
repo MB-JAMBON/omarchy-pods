@@ -202,9 +202,10 @@ plugin identity, keeping its installation and updates separate from the
 original marketplace entry.
 
 `setup` installs `cmake`, `ninja`, `qt6-connectivity`, `qt6-tools`,
-`qt6-declarative`, `pkgconf` and `libpulse` if they are missing, builds the
-daemon into `~/.local`, and enables `librepods.service`. The icon stays visible
-to allow reconnection. To hide it while disconnected:
+`qt6-declarative`, `qt6-quick3d`, `qt6-quicktimeline`, `pkgconf` and `libpulse`
+if they are missing, builds the daemon into `~/.local`, and enables
+`librepods.service`. The icon stays visible to allow reconnection. To hide it
+while disconnected:
 
 ```bash
 omarchy bar set io.github.mb-jambon.omapods hideWhenDisconnected true --json
@@ -226,7 +227,8 @@ of `shell.json` is created before the change.
 To build the daemon by hand instead of running `setup`:
 
 ```bash
-omarchy pkg add cmake ninja qt6-connectivity qt6-tools qt6-declarative pkgconf libpulse
+omarchy pkg add cmake ninja qt6-connectivity qt6-tools qt6-declarative \
+  qt6-quick3d qt6-quicktimeline pkgconf libpulse
 cd ~/.config/omarchy/plugins/io.github.mb-jambon.omapods/daemon
 cmake -B build -G Ninja -DBUILD_TESTING=OFF && cmake --build build
 cmake --install build --prefix ~/.local
@@ -244,7 +246,7 @@ which is where the panel finds `librepods-ctl`. The unit is bound to
 
 ```bash
 systemctl --user disable --now librepods.service
-xargs rm -f < ~/.config/omarchy/plugins/io.github.mb-jambon.omapods/daemon/build/install_manifest.txt
+xargs -r -d '\n' rm -f -- < ~/.config/omarchy/plugins/io.github.mb-jambon.omapods/daemon/build/install_manifest.txt
 rm -rf ~/.config/AirPodsTrayApp ~/.local/state/librepods
 omarchy plugin remove io.github.mb-jambon.omapods
 ```
@@ -290,16 +292,21 @@ opening anything.
 |---------|---------|-------|
 | Hide when disconnected | off | Keep the icon available to reconnect from the AirPods panel. |
 | Path to librepods-ctl | empty | Leave empty to find it on `PATH`. |
+| Show connection card | on | Show the card when the case opens or AirPods connect. |
+| Animate connection card | on | Play the 3D presentation before showing live battery values. |
 
 ## Tests
 
-`Model.js` holds the parsing and formatting, with no QML imports, so it runs
-outside the shell. The suite covers the shapes that bite: the objects the daemon
-omits entirely, a pod it has stopped hearing from, an empty file, a line that is
-not JSON, and a schema newer than this panel reads.
+`Model.js` and `ConnectionEvents.js` have no QML imports, so their parsing,
+formatting and card-trigger logic run outside the shell. The C++ suite covers
+the daemon parsers, battery alerts, IPC, media decisions and persistence.
 
 ```bash
 deno run --allow-read tests/model.test.js
+deno run --allow-read tests/connection-events.test.js
+cmake -S daemon -B daemon/build -G Ninja
+cmake --build daemon/build
+QT_QPA_PLATFORM=offscreen ctest --test-dir daemon/build --output-on-failure
 ```
 
 ## Contributing

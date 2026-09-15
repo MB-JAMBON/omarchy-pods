@@ -35,7 +35,7 @@ QByteArray aes128EcbEncryptBlock(const QByteArray &key, const QByteArray &plaint
         if (EVP_EncryptUpdate(ctx,
                               reinterpret_cast<unsigned char *>(out.data()), &outLen,
                               reinterpret_cast<const unsigned char *>(plaintext.constData()),
-                              plaintext.size()) != 1) {
+                              static_cast<int>(plaintext.size())) != 1) {
             qWarning() << "EVP_EncryptUpdate failed";
             break;
         }
@@ -80,7 +80,7 @@ QByteArray aes128CbcDecryptZeroIv(const QByteArray &key, const QByteArray &block
         if (EVP_DecryptUpdate(ctx,
                               reinterpret_cast<unsigned char *>(out.data()), &outLen,
                               reinterpret_cast<const unsigned char *>(block.constData()),
-                              block.size()) != 1) {
+                              static_cast<int>(block.size())) != 1) {
             qWarning() << "EVP_DecryptUpdate failed";
             break;
         }
@@ -125,8 +125,8 @@ bool verifyRPA(const QString &address, const QByteArray &irk)
 
     QByteArray rpa;
     bool ok;
-    for (int i = parts.size() - 1; i >= 0; --i) {
-        rpa.append(static_cast<char>(parts[i].toInt(&ok, 16)));
+    for (qsizetype i = parts.size() - 1; i >= 0; --i) {
+        rpa.append(static_cast<char>(parts.at(i).toInt(&ok, 16)));
         if (!ok) return false;
     }
     if (rpa.size() != 6) return false;

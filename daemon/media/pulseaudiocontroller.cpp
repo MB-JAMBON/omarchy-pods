@@ -124,7 +124,7 @@ QString PulseAudioController::getDefaultSink()
     } data;
     data.mainloop = m_mainloop;
 
-    auto callback = [](pa_context *c, const pa_server_info *info, void *userdata) {
+    auto callback = [](pa_context *, const pa_server_info *info, void *userdata) {
         CallbackData *d = static_cast<CallbackData*>(userdata);
         if (info && info->default_sink_name)
         {
@@ -157,7 +157,7 @@ int PulseAudioController::getSinkVolume(const QString &sinkName)
     data.targetSink = sinkName;
     data.mainloop = m_mainloop;
 
-    auto callback = [](pa_context *c, const pa_sink_info *info, int eol, void *userdata) {
+    auto callback = [](pa_context *, const pa_sink_info *info, int eol, void *userdata) {
         CallbackData *d = static_cast<CallbackData*>(userdata);
         // PulseAudio reports a failed query with a negative eol, which must wake the waiter too.
         if (eol != 0)
@@ -167,7 +167,8 @@ int PulseAudioController::getSinkVolume(const QString &sinkName)
         }
         if (info && QString::fromUtf8(info->name) == d->targetSink)
         {
-            d->volume = (pa_cvolume_avg(&info->volume) * 100) / PA_VOLUME_NORM;
+            d->volume = static_cast<int>(
+                (static_cast<quint64>(pa_cvolume_avg(&info->volume)) * 100U) / PA_VOLUME_NORM);
             pa_threaded_mainloop_signal(d->mainloop, 0);
         }
     };
@@ -203,7 +204,7 @@ bool PulseAudioController::setSinkVolume(const QString &sinkName, int volumePerc
 
     pa_threaded_mainloop_lock(m_mainloop);
 
-    auto successCallback = [](pa_context *c, int success, void *userdata) {
+    auto successCallback = [](pa_context *, int, void *userdata) {
         pa_threaded_mainloop *mainloop = static_cast<pa_threaded_mainloop*>(userdata);
         pa_threaded_mainloop_signal(mainloop, 0);
     };
@@ -316,7 +317,7 @@ bool PulseAudioController::setCardProfile(const QString &cardName, const QString
 
     pa_threaded_mainloop_lock(m_mainloop);
     
-    auto successCallback = [](pa_context *c, int success, void *userdata) {
+    auto successCallback = [](pa_context *, int, void *userdata) {
         pa_threaded_mainloop *mainloop = static_cast<pa_threaded_mainloop*>(userdata);
         pa_threaded_mainloop_signal(mainloop, 0);
     };
@@ -344,7 +345,7 @@ QString PulseAudioController::getCardNameForDevice(const QString &macAddress)
     data.targetMac = macAddress;
     data.mainloop = m_mainloop;
 
-    auto callback = [](pa_context *c, const pa_card_info *info, int eol, void *userdata) {
+    auto callback = [](pa_context *, const pa_card_info *info, int eol, void *userdata) {
         CallbackData *d = static_cast<CallbackData*>(userdata);
         // PulseAudio reports a failed query with a negative eol, which must wake the waiter too.
         if (eol != 0)
@@ -389,7 +390,7 @@ bool PulseAudioController::isProfileAvailable(const QString &cardName, const QSt
     data.targetProfile = profileName;
     data.mainloop = m_mainloop;
 
-    auto callback = [](pa_context *c, const pa_card_info *info, int eol, void *userdata) {
+    auto callback = [](pa_context *, const pa_card_info *info, int eol, void *userdata) {
         CallbackData *d = static_cast<CallbackData*>(userdata);
         // PulseAudio reports a failed query with a negative eol, which must wake the waiter too.
         if (eol != 0)

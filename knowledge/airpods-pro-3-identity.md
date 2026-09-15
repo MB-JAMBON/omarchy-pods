@@ -13,7 +13,7 @@ verified:
 
 ```
 Device AA:BB:CC:DD:EE:FF (public)
-	Name: GM’s AirPods Pro
+	Name: Sample’s AirPods Pro
 	Class: 0x00240418
 	Icon: audio-headphones
 	Modalias: bluetooth:v004Cp2027d0429

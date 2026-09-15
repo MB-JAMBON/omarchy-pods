@@ -15,6 +15,7 @@
 #include <csignal>
 #include <fcntl.h>
 #include <memory>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <QBluetoothLocalDevice>
 #include <QBluetoothSocket>
@@ -70,8 +71,9 @@ class AirPodsTrayApp : public QObject {
 
 public:
     AirPodsTrayApp(bool debugMode, bool hideOnStart, bool headless, QQmlApplicationEngine *parent = nullptr)
-        : QObject(parent), debugMode(debugMode), m_settings(new QSettings("AirPodsTrayApp", "AirPodsTrayApp"))
-        , m_autoStartManager(new AutoStartManager(this)), m_hideOnStart(hideOnStart), parent(parent)
+        : QObject(parent), debugMode(debugMode), parent(parent)
+        , m_settings(new QSettings("AirPodsTrayApp", "AirPodsTrayApp", this))
+        , m_autoStartManager(new AutoStartManager(this)), m_hideOnStart(hideOnStart)
         , m_deviceInfo(new DeviceInfo(this)), m_bleManager(new BleManager(this))
         , m_systemSleepMonitor(new SystemSleepMonitor(this)), m_notifier(new Notifier(this))
     {
@@ -850,7 +852,7 @@ private slots:
                                  QStringLiteral("BlueZ disconnect event"));
     }
 
-    void finalizeDeviceDisconnected(const QString &address)
+    void finalizeDeviceDisconnected()
     {
         if (m_disconnectFinalized) {
             return;
@@ -900,7 +902,7 @@ private slots:
     {
         rememberAirPodsDevice(address, name);
         if (m_lastAirPodsAddress.isEmpty() || m_isSuspending) {
-            finalizeDeviceDisconnected(address);
+            finalizeDeviceDisconnected();
             return;
         }
 
@@ -956,7 +958,7 @@ private slots:
 
         const QString address = m_lastAirPodsAddress;
         if (address.isEmpty()) {
-            finalizeDeviceDisconnected(address);
+            finalizeDeviceDisconnected();
             return;
         }
 
@@ -1012,7 +1014,7 @@ private slots:
             LOG_INFO("AirPods stayed disconnected through control recovery, finalizing "
                      << m_lastAirPodsAddress);
         }
-        finalizeDeviceDisconnected(m_lastAirPodsAddress);
+        finalizeDeviceDisconnected();
     }
 
     void finishControlRecovery()
@@ -1039,7 +1041,7 @@ private slots:
         }
     }
 
-    void bluezDeviceDisconnected(const QString &address, const QString &name)
+    void bluezDeviceDisconnected(const QString &address, const QString &)
     {
         if (address == m_deviceInfo->bluetoothAddress())
         {
@@ -1613,7 +1615,7 @@ public:
             LOG_INFO("Running headless, so there is no window to open");
             return;
         }
-        parent->load(QUrl(QStringLiteral("qrc:/linux/Main.qml")));
+        parent->load(QUrl(QStringLiteral("qrc:/qt/qml/linux/Main.qml")));
     }
 
 signals:
@@ -1820,6 +1822,10 @@ private:
 };
 
 int main(int argc, char *argv[]) {
+    // Match the systemd unit when the daemon is launched by hand: pairing data
+    // and every other file created by this process start owner-only.
+    ::umask(S_IRWXG | S_IRWXO);
+
     // Read before the application object exists, because --headless decides which class to construct.
     bool debugMode = false;
     bool hideOnStart = false;
@@ -2039,13 +2045,12 @@ int main(int argc, char *argv[]) {
 
     if (!server.listen(ipcPath))
     {
-        LOG_ERROR("Unable to start the listening server");
-        LOG_DEBUG("Server error: " << server.errorString());
+        LOG_ERROR("Unable to start the listening server: " << server.errorString());
+        QFile::remove(QStandardPaths::writableLocation(QStandardPaths::GenericStateLocation)
+                      + QStringLiteral("/librepods/status.json"));
+        return 1;
     }
-    else
-    {
-        LOG_DEBUG("Server started, waiting for connections...");
-    }
+    LOG_DEBUG("Server started, waiting for connections...");
     // Capture by pointer (not reference-to-local) so the lambdas don't
     // dangle if main()'s frame is unwound by an exception or alt exit
     // path. `engine` and `trayApp` outlive the server (they're created

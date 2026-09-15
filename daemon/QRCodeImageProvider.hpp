@@ -9,7 +9,7 @@ class QRCodeImageProvider : public QQuickImageProvider
 public:
     QRCodeImageProvider() : QQuickImageProvider(QQuickImageProvider::Image) {}
 
-    QImage requestImage(const QString &id, QSize *size, const QSize &requestedSize) override
+    QImage requestImage(const QString &id, QSize *size, const QSize &) override
     {
         // Parse the keys from id (format: "encKey;irk")
         QStringList keys = id.split(';');

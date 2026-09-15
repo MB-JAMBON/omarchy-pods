@@ -56,7 +56,7 @@ Panel {
   }
   Timer {
     id: connectionDelay
-    interval: 600
+    interval: root.connectionCardDelayMs
     onTriggered: if ((pods.hasAirPods || pods.lidState === Model.LID_OPEN) && root.ownsConnectionCard())
       root.previewConnectionCard()
   }
@@ -77,6 +77,7 @@ Panel {
 
   readonly property int lowBatteryPercent: 20
   readonly property int adaptiveStepPercent: 5
+  readonly property int connectionCardDelayMs: 600
   readonly property int phraseIntervalMs: 2800
 
   // Ten, matching the stock panels.
