@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "io.github.mb-jambon.omapods",
   "name": "AirPods Experience",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "author": "MB-JAMBON",
   "license": "MIT",
   "description": "AirPods controls, detailed battery state and native animated connection cards for Omarchy.",

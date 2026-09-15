@@ -14,8 +14,9 @@
 
 ## Animated connection card (this fork)
 
-A temporary native Qt Quick 3D card appears on connection, with the current
-Omarchy theme and real battery values. AirPods Pro use the optimized model:
+A temporary native Qt Quick 3D card appears when the case opens or the audio
+connection is established, with the current Omarchy theme and real battery
+values. AirPods Pro use the optimized model:
 the lid opens, the earbuds rise, then the assembly turns once. AirPods Max use
 a white and silver finish, rise into place while their earcups move outward,
 then the headset turns once. Other
@@ -52,8 +53,10 @@ omarchy bar set io.github.mb-jambon.omapods animateConnectionCard false --json
 ```
 
 The animation is a connection presentation, not a live reconstruction of the
-physical lid or earbud position. Shell reloads and battery updates do not replay
-it; a 15-second cooldown suppresses brief reconnects.
+physical lid or earbud position. Only a known closed-to-open lid transition can
+trigger it before audio connects, so a shell restart with an already-open case
+stays quiet. Battery updates do not replay it, and a 15-second cooldown merges
+the opening and the following audio connection into one card.
 
 ## What it shows
 

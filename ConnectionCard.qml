@@ -168,7 +168,10 @@ Item {
         }
         Text {
           Layout.fillWidth: true
-          text: root.previewOnly ? "Prévisualisation de l’animation" : "Connectés à ce PC"
+          text: root.previewOnly ? "Prévisualisation de l’animation"
+            : root.pods && root.pods.connected ? "Connectés à ce PC"
+            : root.pods && root.pods.lidState === Model.LID_OPEN ? "Boîtier ouvert"
+            : "AirPods détectés"
           color: Color.accent
           font.family: Style.font.family
           font.pixelSize: Style.font.bodySmall

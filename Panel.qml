@@ -23,7 +23,8 @@ Panel {
   }
 
   function previewConnectionCard(demo = false, previewModel = "pro") {
-    if (!demo && !pods.hasAirPods) return "Connect AirPods before opening the card"
+    if (!demo && !pods.hasAirPods && pods.lidState !== Model.LID_OPEN)
+      return "Connect AirPods or open their case before opening the card"
     connectionCard.active = false
     connectionCard.setSource("ConnectionCard.qml", { pods: pods, previewOnly: demo, previewModel: previewModel,
       animateModel: root.setting("animateConnectionCard", true) === true })
@@ -42,9 +43,12 @@ Panel {
   Connections {
     target: pods
     function onStatusUpdated() {
-      if (ConnectionEvents.shouldShow(root.connectionEvents, pods.connected, Date.now())
+      if (ConnectionEvents.shouldShow(root.connectionEvents, pods.connected, pods.lidState, Date.now())
           && root.setting("showConnectionCard", true) === true) connectionDelay.restart()
-      if (!pods.connected) { connectionDelay.stop(); connectionCard.active = false }
+      if (!pods.connected && pods.lidState !== Model.LID_OPEN) {
+        connectionDelay.stop()
+        connectionCard.active = false
+      }
     }
     function onDaemonReachableChanged() {
       if (!pods.daemonReachable) { connectionDelay.stop(); connectionCard.active = false }
@@ -53,7 +57,7 @@ Panel {
   Timer {
     id: connectionDelay
     interval: 600
-    onTriggered: if (pods.hasAirPods && root.ownsConnectionCard())
+    onTriggered: if ((pods.hasAirPods || pods.lidState === Model.LID_OPEN) && root.ownsConnectionCard())
       root.previewConnectionCard()
   }
 
