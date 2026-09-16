@@ -312,8 +312,7 @@ QT_QPA_PLATFORM=offscreen ctest --test-dir daemon/build --output-on-failure
 ## Contributing
 
 Bug reports and pull requests are welcome. [CONTRIBUTING.md](CONTRIBUTING.md)
-covers the build, what review will ask you to prove, and the house style;
-[AGENTS.md](AGENTS.md) adds the traps coding agents hit in this tree.
+covers the build, what review will ask you to prove, and the house style.
 
 ## Credits
 
