@@ -157,7 +157,7 @@ Item {
           Layout.fillWidth: true
           Layout.rightMargin: Style.space(16)
           text: root.previewOnly
-            ? (root.showMaxModel ? "AirPods Max · aperçu" : "AirPods Pro · aperçu")
+            ? (root.showMaxModel ? "AirPods Max · preview" : "AirPods Pro · preview")
             : root.pods && root.pods.deviceName ? root.pods.deviceName : "AirPods"
           textFormat: Text.PlainText
           color: Color.popups.text
@@ -168,10 +168,10 @@ Item {
         }
         Text {
           Layout.fillWidth: true
-          text: root.previewOnly ? "Prévisualisation de l’animation"
-            : root.pods && root.pods.connected ? "Connectés à ce PC"
-            : root.pods && root.pods.lidState === Model.LID_OPEN ? "Boîtier ouvert"
-            : "AirPods détectés"
+          text: root.previewOnly ? "Animation preview"
+            : root.pods && root.pods.connected ? "Connected to this PC"
+            : root.pods && root.pods.lidState === Model.LID_OPEN ? "Case open"
+            : "AirPods detected"
           color: Color.accent
           font.family: Style.font.family
           font.pixelSize: Style.font.bodySmall
@@ -247,8 +247,8 @@ Item {
                 : modelData === "left" ? root.pods.leftPod
                 : modelData === "right" ? root.pods.rightPod
                 : modelData === "headset" ? root.pods.headsetBattery : root.pods.caseBattery
-              label: modelData === "left" ? "Gauche" : modelData === "right" ? "Droite"
-                : modelData === "headset" ? "Casque" : "Boîtier"
+              label: modelData === "left" ? "Left" : modelData === "right" ? "Right"
+                : modelData === "headset" ? "Headset" : "Case"
             }
           }
         }
