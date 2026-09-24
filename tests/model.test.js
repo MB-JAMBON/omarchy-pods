@@ -3,7 +3,7 @@
 
 const source = Deno.readTextFileSync(new URL("../Model.js", import.meta.url))
 const Model = new Function(
-  source + "; return { parseStatus, podFrom, defaultPod, noiseModeVerb, earDetectionVerb, levelFraction, levelText, podMeta, elideError, availableModes, NOISE_OFF, NOISE_ANC, NOISE_TRANSPARENCY, NOISE_ADAPTIVE, LEVEL_UNKNOWN, NOISE_UNKNOWN, EAR_PAUSE_ONE_OUT, LID_UNKNOWN, MAX_ERROR_CHARS }"
+  source + "; return { parseStatus, maxFinish, podFrom, defaultPod, noiseModeVerb, earDetectionVerb, levelFraction, levelText, podMeta, elideError, availableModes, NOISE_OFF, NOISE_ANC, NOISE_TRANSPARENCY, NOISE_ADAPTIVE, LEVEL_UNKNOWN, NOISE_UNKNOWN, EAR_PAUSE_ONE_OUT, LID_UNKNOWN, MAX_ERROR_CHARS }"
 )()
 
 let failures = 0
@@ -136,6 +136,13 @@ check("a Pro 3 loses Off and keeps Adaptive", modesFor(good),
   [Model.NOISE_TRANSPARENCY, Model.NOISE_ADAPTIVE, Model.NOISE_ANC])
 check("a Max 2 gets all four", modesFor(max2),
   [Model.NOISE_OFF, Model.NOISE_TRANSPARENCY, Model.NOISE_ADAPTIVE, Model.NOISE_ANC])
+
+check("a daemon without color_id leaves the colour unknown", good.colorId, -1)
+const blueMax = Model.parseStatus(live.replace('"lid_state":2', '"lid_state":2,"color_id":18'))
+check("color_id is parsed", blueMax.colorId, 18)
+check("the Blue Max byte has a finish", Model.maxFinish(18) !== null, true)
+check("an unmapped byte keeps the stock finish", Model.maxFinish(0), null)
+check("an unknown colour keeps the stock finish", Model.maxFinish(-1), null)
 
 if (failures > 0) {
   console.log(failures + " failed")

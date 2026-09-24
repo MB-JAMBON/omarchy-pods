@@ -168,6 +168,7 @@ void BleManager::onDeviceDiscovered(const QBluetoothDeviceInfo &info)
 
             // Lid open counter and device color
             quint8 lidIndicator = static_cast<quint8>(data[8]);
+            deviceInfo.colorId = static_cast<quint8>(data[9]);
             deviceInfo.color = getColorName((quint8)(data[9]));
 
             deviceInfo.connectionState = static_cast<BleInfo::ConnectionState>(data[10]);

@@ -24,6 +24,7 @@ public:
     AirpodsTrayApp::Enums::AirPodsModel modelName = AirpodsTrayApp::Enums::AirPodsModel::Unknown;
     quint8 lidOpenCounter = 0;
     QString color = "Unknown"; // Default color
+    int colorId = -1;
     quint8 status = 0;
     QByteArray rawData;
     QByteArray encryptedPayload; // 16 bytes of encrypted payload

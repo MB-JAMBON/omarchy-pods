@@ -81,6 +81,7 @@ public:
         LOG_INFO("Initializing OpenPods");
         restrictSettingsAccess();
 
+        m_colorId = m_settings->value("DeviceInfo/colorId", -1).toInt();
         m_notifier->setEnabled(loadNotificationsEnabled());
         connect(m_notifier, &Notifier::enabledChanged, this, &AirPodsTrayApp::saveNotificationsEnabled);
         connect(m_notifier, &Notifier::enabledChanged, this, &AirPodsTrayApp::notificationsEnabledChanged);
@@ -1526,6 +1527,11 @@ private slots:
             }
             m_deviceInfo->getEarDetection()->overrideEarDetectionStatus(device.isPrimaryInEar, device.isSecondaryInEar);
             m_lidState = device.lidState;
+            if (device.colorId >= 0 && device.colorId != m_colorId) {
+                m_colorId = device.colorId;
+                // Scanning stops once the control link is up, so a restart would otherwise lose it.
+                m_settings->setValue("DeviceInfo/colorId", m_colorId);
+            }
         }
     }
 
@@ -1774,6 +1780,8 @@ public:
         status.insert("ear_detection_behavior", earDetectionBehavior());
         // 0 = open, 1 = closed, 2 = unknown (matches BleInfo::LidState).
         status.insert("lid_state", lidState());
+        // Raw BLE colour byte (data[9]), -1 until an advertisement has been seen.
+        status.insert("color_id", m_colorId);
         return status;
     }
 
@@ -1814,6 +1822,7 @@ private:
     QByteArray m_lastState;
     // Lid only moves on a BLE advertisement, so this stays UNKNOWN until one arrives.
     BleInfo::LidState m_lidState = BleInfo::LidState::UNKNOWN;
+    int m_colorId = -1;
     DeviceInfo *m_deviceInfo;
     BleManager *m_bleManager;
     SystemSleepMonitor *m_systemSleepMonitor = nullptr;

@@ -35,6 +35,14 @@ static QByteArray withPodsBattery(const QByteArray &frame, quint8 podsByte)
     return other;
 }
 
+// data[9] is the colour byte Apple broadcasts for the housing finish.
+static QByteArray withColor(const QByteArray &frame, quint8 colorByte)
+{
+    QByteArray other = frame;
+    other[9] = char(colorByte);
+    return other;
+}
+
 // Bit 5 of the status byte says the left pod is primary, and clearing it flips the nibbles.
 static QByteArray withRightPodPrimary(const QByteArray &frame)
 {
@@ -70,6 +78,7 @@ private slots:
     void unparseableFrameIsDropped();
     void realAirPodsFrameIsParsed();
     void podsBatteryKeepsLeftAndRightApart();
+    void colorByteIsKeptRaw();
 };
 
 void TestBleManager::unparseableFrameIsDropped_data()
@@ -101,6 +110,18 @@ void TestBleManager::realAirPodsFrameIsParsed()
     // Decoded from the capture: 0x8f is a case nibble of 15 meaning absent, 0x04 is idle.
     QCOMPARE(parsed.caseBattery, -1);
     QCOMPARE(parsed.connectionState, BleInfo::ConnectionState::IDLE);
+}
+
+void TestBleManager::colorByteIsKeptRaw()
+{
+    BleInfo parsed;
+
+    // The Pro 3 capture's data[9] is 0x00.
+    QCOMPARE(parseFrame(QByteArray::fromHex(airPodsFrameHex), &parsed), 1);
+    QCOMPARE(parsed.colorId, 0x00);
+    // 0x12 is what a Blue AirPods Max (USB-C) broadcasts, and getColorName has no entry for it.
+    QCOMPARE(parseFrame(withColor(QByteArray::fromHex(airPodsFrameHex), 0x12), &parsed), 1);
+    QCOMPARE(parsed.colorId, 0x12);
 }
 
 void TestBleManager::podsBatteryKeepsLeftAndRightApart()

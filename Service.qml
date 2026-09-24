@@ -26,6 +26,7 @@ Item {
   property bool conversationalAwareness: false
   property int earDetectionBehavior: Model.EAR_PAUSE_ONE_OUT
   property int lidState: Model.LID_UNKNOWN
+  property int colorId: -1
   property bool schemaUnsupported: false
   property var leftPod: Model.defaultPod()
   property var rightPod: Model.defaultPod()
@@ -119,6 +120,8 @@ Item {
     caseBattery = status.caseBattery
     headsetBattery = status.headset
     lidState = status.lidState
+    // Hold the last known colour: BLE adverts can stop once the link is up.
+    if (status.colorId >= 0) colorId = status.colorId
 
     noiseMode = _settle("noiseMode", status.noiseMode)
     adaptiveNoiseLevel = _settle("adaptiveNoiseLevel", status.adaptiveNoiseLevel)

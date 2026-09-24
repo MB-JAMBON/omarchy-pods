@@ -6,6 +6,12 @@ import QtQuick.Timeline
 Node {
     id: node
 
+    // ConnectionCard overrides these per colourway; the defaults are the stock finish.
+    property color shellColor: "#ffe8ebee"
+    property color fabricColor: "#ffd9dde1"
+    property color canopyColor: "#ffd5d9de"
+    property color canopyWeaveColor: "#ffcfd4d9"
+
     property alias animationFrame: reveal_earcups_and_turn_timeline.currentFrame
 
     // Resources
@@ -68,7 +74,7 @@ Node {
     PrincipledMaterial {
         id: dpauuenuPBdCvhC_material
         objectName: "DpauuenuPBdCvhC"
-        baseColor: "#ffd5d9de"
+        baseColor: node.canopyColor
         roughness: 0.82
         emissiveFactor: Qt.vector3d(0.04, 0.04, 0.04)
         cullMode: PrincipledMaterial.NoCulling
@@ -115,7 +121,7 @@ Node {
     PrincipledMaterial {
         id: lreQKsjeIoeplRB_material
         objectName: "LReQKsjeIoeplRB"
-        baseColor: "#ffd9dde1"
+        baseColor: node.fabricColor
         roughness: 0.9
         cullMode: PrincipledMaterial.NoCulling
         alphaMode: PrincipledMaterial.Opaque
@@ -133,7 +139,7 @@ Node {
     PrincipledMaterial {
         id: rs_Material_material
         objectName: "RS_Material"
-        baseColor: "#ffe8ebee"
+        baseColor: node.shellColor
         metalness: 0.58
         roughness: 0.34
         cullMode: PrincipledMaterial.NoCulling
@@ -151,7 +157,7 @@ Node {
     PrincipledMaterial {
         id: deFxnmzQHJkzqmx_material
         objectName: "DeFxnmzQHJkzqmx"
-        baseColor: "#ffcfd4d9"
+        baseColor: node.canopyWeaveColor
         roughness: 0.78
         emissiveFactor: Qt.vector3d(0.04, 0.04, 0.04)
         cullMode: PrincipledMaterial.NoCulling

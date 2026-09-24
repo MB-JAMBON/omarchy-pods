@@ -22,6 +22,8 @@ Item {
   readonly property bool showThreeDimensionalModel: showMaxModel || showProModel
   readonly property int animationEnd: showMaxModel ? 7800 : 8500
   readonly property int lowBatteryPercent: 20
+  // Keeps the canopy weave readable against its own backing on a tinted finish.
+  readonly property real weaveLighten: 1.12
 
   readonly property var targetScreen: Quickshell.screens.find(screen =>
     Hyprland.focusedMonitor && screen.name === Hyprland.focusedMonitor.name) || Quickshell.screens[0]
@@ -211,6 +213,15 @@ Item {
                 : "assets/airpods/Air_pods_pro_animated.qml"
               y: root.showMaxModel ? -1.4 : -0.6
               onLoaded: {
+                if (root.showMaxModel) {
+                  var finish = Model.maxFinish(root.pods ? root.pods.colorId : -1)
+                  if (finish) {
+                    item.shellColor = finish.shell
+                    item.fabricColor = finish.fabric
+                    item.canopyColor = finish.fabric
+                    item.canopyWeaveColor = Qt.lighter(finish.fabric, weaveLighten)
+                  }
+                }
                 item.animationFrame = root.animateModel ? 0 : root.animationEnd
                 if (root.animateModel) modelAnimation.start()
               }

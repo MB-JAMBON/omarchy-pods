@@ -59,6 +59,7 @@ function defaultStatus() {
     conversationalAwareness: false,
     earDetectionBehavior: EAR_PAUSE_ONE_OUT,
     lidState: LID_UNKNOWN,
+    colorId: -1,
     left: defaultPod(),
     right: defaultPod(),
     caseBattery: { level: LEVEL_UNKNOWN, charging: false },
@@ -151,6 +152,7 @@ function parseStatus(raw) {
   status.conversationalAwareness = parsed.conversational_awareness === true
   status.earDetectionBehavior = intOr(parsed.ear_detection_behavior, EAR_PAUSE_ONE_OUT)
   status.lidState = intOr(parsed.lid_state, LID_UNKNOWN)
+  status.colorId = intOr(parsed.color_id, -1)
   status.left = podFrom(parsed.left)
   status.right = podFrom(parsed.right)
   var caseRaw = podFrom(parsed["case"])
@@ -226,4 +228,14 @@ function podMeta(pod) {
 function elideError(text) {
   var value = String(text || "").replace(/\s+/g, " ").trim()
   return value.length > MAX_ERROR_CHARS ? value.substring(0, ELIDED_ERROR_CHARS) + "…" : value
+}
+
+// AirPods Max finishes keyed by the BLE colour byte, "color_id" in the status line.
+// Only bytes seen from real hardware belong here; anything else keeps the model's default.
+var MAX_FINISHES = {
+  0x12: { shell: "#ff2f3d5c", fabric: "#ff27324a" }, // AirPods Max (USB-C) Blue, A3184
+}
+
+function maxFinish(colorId) {
+  return MAX_FINISHES[colorId] || null
 }
