@@ -88,10 +88,21 @@ QString getConnectionStateName(BleInfo::ConnectionState state)
     }
 }
 
+namespace
+{
+// The kernel skips the passive scan bonded LE devices reconnect through while any discovery is open (hci_update_passive_scan_sync).
+constexpr int kScanWindowMs = 4000;
+constexpr int kIdleGapMs = 8000;
+}
+
 BleManager::BleManager(QObject *parent) : QObject(parent)
 {
     discoveryAgent = new QBluetoothDeviceDiscoveryAgent(this);
-    discoveryAgent->setLowEnergyDiscoveryTimeout(0); // Continuous scanning
+    discoveryAgent->setLowEnergyDiscoveryTimeout(kScanWindowMs);
+
+    rescanTimer = new QTimer(this);
+    rescanTimer->setSingleShot(true);
+    connect(rescanTimer, &QTimer::timeout, this, &BleManager::beginScanWindow);
 
     connect(discoveryAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered,
             this, &BleManager::onDeviceDiscovered);
@@ -110,21 +121,33 @@ BleManager::~BleManager()
     // redundant and ran before Qt's own child cleanup pass. Now empty.
 }
 
+void BleManager::beginScanWindow()
+{
+    if (!scanRequested || discoveryAgent->isActive())
+        return;
+    discoveryAgent->start(QBluetoothDeviceDiscoveryAgent::LowEnergyMethod);
+}
+
 void BleManager::startScan()
 {
     LOG_DEBUG("Starting BLE scan...");
-    discoveryAgent->start(QBluetoothDeviceDiscoveryAgent::LowEnergyMethod);
+    scanRequested = true;
+    rescanTimer->stop();
+    beginScanWindow();
 }
 
 void BleManager::stopScan()
 {
     LOG_DEBUG("Stopping BLE scan...");
+    scanRequested = false;
+    rescanTimer->stop();
     discoveryAgent->stop();
 }
 
 bool BleManager::isScanning() const
 {
-    return discoveryAgent->isActive();
+    // Callers mean "in a scanning state", so the idle gap between windows counts.
+    return scanRequested || discoveryAgent->isActive();
 }
 
 void BleManager::onDeviceDiscovered(const QBluetoothDeviceInfo &info)
@@ -228,9 +251,10 @@ void BleManager::onDeviceDiscovered(const QBluetoothDeviceInfo &info)
 
 void BleManager::onScanFinished()
 {
-    if (discoveryAgent->isActive())
+    // The gap is what lets BlueZ close the discovery session.
+    if (scanRequested)
     {
-        discoveryAgent->start(QBluetoothDeviceDiscoveryAgent::LowEnergyMethod);
+        rescanTimer->start(kIdleGapMs);
     }
 }
 
