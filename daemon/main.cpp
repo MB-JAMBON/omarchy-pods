@@ -1567,6 +1567,11 @@ public:
         }
 
         if (force) {
+            // `bluetoothctl connect ""` never exits and its unread output piles up in this process.
+            if (!m_deviceInfo || m_deviceInfo->bluetoothAddress().isEmpty()) {
+                LOG_WARN("connectToAirPods: no current address to connect");
+                return;
+            }
             LOG_INFO("Forcing connection to AirPods");
             // Async: don't block UI on bluetoothctl. Once it finishes, walk
             // the connected-device list and dispatch to connectToDevice().
@@ -1585,7 +1590,7 @@ public:
                             }
                         }
                     });
-            proc->start("bluetoothctl", QStringList() << "connect" << m_deviceInfo->bluetoothAddress());
+            proc->start("bluetoothctl", QStringList() << "--timeout" << "30" << "connect" << m_deviceInfo->bluetoothAddress());
             return;
         }
         QBluetoothLocalDevice localDevice;
